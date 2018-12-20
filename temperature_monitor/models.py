@@ -51,6 +51,19 @@ class Sensor(models.Model):
         unique=True,
     )
 
+    battery = models.CharField(
+        blank=True,
+        help_text='',
+        max_length=5,
+        null=True,
+    )
+    link = models.CharField(
+        blank=True,
+        help_text='',
+        max_length=5,
+        null=True,
+    )
+
     humidity_alert_min_unitless = models.SmallIntegerField(
         blank=True,
         help_text='',

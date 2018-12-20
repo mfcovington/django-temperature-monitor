@@ -17,12 +17,14 @@ class SensorAdmin(admin.ModelAdmin):
         'time_since_last_seen',
         'probe_temp',
         'probe_range',
+        'battery',
+        'link',
+        'timepoints_count',
         'sensor_temp',
         'sensor_range',
         'humidity',
         'humidity_range',
         'serial_number',
-        'timepoints_count',
         'device_type',
     ]
 

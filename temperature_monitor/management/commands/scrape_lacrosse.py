@@ -86,6 +86,11 @@ class Command(BaseCommand):
                 sensor.device_type = device_type
                 sensor.location = device_name
 
+            sensor.link = soup.select_one(
+                'tr.HiddenForPWS-{} td.notiLink'.format(device_id)).text
+            sensor.battery = soup.select_one(
+                'tr.HiddenForPWS-{} td.notiBattery'.format(device_id)).text
+
             (probe_min, probe_max) = get_alert_settings(
                 soup, device_id, device_type, 'probe')
             sensor.probe_alert_min_celsius_unitless = probe_min

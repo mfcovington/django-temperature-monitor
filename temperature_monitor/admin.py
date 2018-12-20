@@ -20,6 +20,7 @@ class SensorAdmin(admin.ModelAdmin):
         'humidity',
         'serial_number',
         'timepoints_count',
+        'device_type',
     ]
 
     def timepoints_count(self, obj):

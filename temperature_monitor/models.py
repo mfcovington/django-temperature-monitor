@@ -12,6 +12,10 @@ def convert_c_to_f(temperature):
 
 
 class Sensor(models.Model):
+    device_type = models.CharField(
+        help_text='Sensor type.',
+        max_length=15,
+    )
     location = models.CharField(
         help_text='Name and/or location of sensor.',
         max_length=20,

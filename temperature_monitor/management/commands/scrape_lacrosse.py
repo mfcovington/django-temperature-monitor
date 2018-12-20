@@ -56,6 +56,7 @@ class Command(BaseCommand):
             sensor, created = Sensor.objects.get_or_create(
                 serial_number=device_id)
             if created or sensor.location is not device_name:
+                sensor.device_type = device.attrs['data-device-type']
                 sensor.location = device_name
                 sensor.save()
 

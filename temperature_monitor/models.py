@@ -8,7 +8,32 @@ import humanize
 
 
 def convert_c_to_f(temperature):
-    return 9 * temperature / 5 + 32
+    if temperature is None:
+        return None
+    else:
+        return 9 * temperature / 5 + 32
+
+
+def pretty_range(alert_min, alert_max, alert_type='temperature'):
+    unit = ''
+    if alert_type == 'temperature':
+        unit = getattr(settings, 'TEMPERATURE_MONITOR_UNIT', 'C')
+        if unit is 'F':
+            alert_min = convert_c_to_f(alert_min)
+            alert_max = convert_c_to_f(alert_max)
+        unit = ' °{}'.format(unit)
+    elif alert_type == 'humidity':
+        unit = '%'
+
+    if alert_min is None and alert_max is None:
+        return '-'
+    elif alert_min is None:
+        return '≤ {}{}'.format(alert_max, unit)
+    elif alert_max is None:
+        return '≥ {}{}'.format(alert_min, unit)
+    else:
+        return '{}{} to {}{}'.format(
+            alert_min, unit, alert_max, unit)
 
 
 class Sensor(models.Model):
@@ -65,8 +90,21 @@ class Sensor(models.Model):
         return self.timepoints.latest().humidity
 
     @property
+    def humidity_range(self):
+        return pretty_range(
+            self.humidity_alert_min_unitless,
+            self.humidity_alert_max_unitless,
+            alert_type='humidity')
+
+    @property
     def last_seen(self):
         return self.timepoints.latest().time
+
+    @property
+    def probe_range(self):
+        return pretty_range(
+            self.probe_alert_min_celsius_unitless,
+            self.probe_alert_max_celsius_unitless)
 
     @property
     def probe_temp(self):
@@ -74,6 +112,12 @@ class Sensor(models.Model):
             return self.timepoints.latest().probe_farhenheit
         else:
             return self.timepoints.latest().probe_celsius
+
+    @property
+    def sensor_range(self):
+        return pretty_range(
+            self.sensor_alert_min_celsius_unitless,
+            self.sensor_alert_max_celsius_unitless)
 
     @property
     def sensor_temp(self):

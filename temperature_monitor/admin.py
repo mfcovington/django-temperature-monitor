@@ -3,13 +3,8 @@ from django.contrib import admin
 from .models import Sensor, TimePoint
 
 
-class TimePointInline(admin.TabularInline):
-    model = TimePoint
-
-
 @admin.register(Sensor)
 class SensorAdmin(admin.ModelAdmin):
-    inlines = [TimePointInline]
     save_on_top = True
     list_display = [
         'location',

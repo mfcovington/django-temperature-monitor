@@ -1,5 +1,10 @@
+import datetime
+import pytz
+
 from django.conf import settings
 from django.db import models
+
+import humanize
 
 
 def convert_c_to_f(temperature):
@@ -41,6 +46,10 @@ class Sensor(models.Model):
             return self.timepoints.latest().sensor_farhenheit
         else:
             return self.timepoints.latest().sensor_celsius
+
+    @property
+    def time_since_last_seen(self):
+        return self.timepoints.latest().time_since
 
     class Meta:
         ordering = ['location']
@@ -133,6 +142,11 @@ class TimePoint(models.Model):
             return None
         else:
             return round(convert_c_to_f(self.sensor_celsius_unitless), 1)
+
+    @property
+    def time_since(self):
+        now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
+        return humanize.naturaltime(now - self.time)
 
     class Meta:
         get_latest_by = ['time']

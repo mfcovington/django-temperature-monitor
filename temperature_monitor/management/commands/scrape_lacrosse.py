@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand
 import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 from ...models import Sensor, TimePoint
 
@@ -28,7 +29,9 @@ class Command(BaseCommand):
         tz = pytz.timezone(settings.TIME_ZONE)
 
         print('Connecting to La Crosse Alerts site.')
-        driver = webdriver.Firefox()
+        options = Options()
+        options.set_headless(True)
+        driver = webdriver.Firefox(options=options)
         driver.get(url)
         driver.find_element_by_id('iLogEmail').send_keys(username)
         driver.find_element_by_id('iLogPass').send_keys(password)

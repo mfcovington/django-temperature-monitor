@@ -18,6 +18,32 @@ def convert_f_to_c(temperature):
     return 5 * temperature / 9 - 32
 
 
+def get_alert_settings(soup, device_id, device_type, input_type):
+    INPUT_TYPES = {
+        'sensor': 1,
+        'probe': 2,
+        'humidity': 3,
+    }
+    alert_settings = soup.find('li', {'id': 'device_input_{}_{}_{}'.format(
+        INPUT_TYPES[input_type], device_type, device_id)})
+    alert_max = alert_settings.attrs['data-alertmax']
+    alert_min = alert_settings.attrs['data-alertmin']
+    alert_units = alert_settings.attrs['data-units']
+    alert_units = alert_settings.attrs['data-units']
+
+    if alert_min == 'null':
+        alert_min = None
+    elif alert_units == '°F':
+        alert_min = convert_f_to_c(alert_min)
+
+    if alert_max == 'null':
+        alert_max = None
+    elif alert_units == '°F':
+        alert_max = convert_f_to_c(alert_max)
+
+    return (alert_min, alert_max)
+
+
 class Command(BaseCommand):
     def handle(self, **options):
         username = settings.LA_CROSSE_ALERTS_USERNAME
@@ -52,13 +78,30 @@ class Command(BaseCommand):
         for device in device_list:
             device_id = device.attrs['data-id']
             device_name = device.get_text(strip=True)
+            device_type = device.attrs['data-device-type']
 
             sensor, created = Sensor.objects.get_or_create(
                 serial_number=device_id)
             if created or sensor.location is not device_name:
-                sensor.device_type = device.attrs['data-device-type']
+                sensor.device_type = device_type
                 sensor.location = device_name
-                sensor.save()
+
+            (probe_min, probe_max) = get_alert_settings(
+                soup, device_id, device_type, 'probe')
+            sensor.probe_alert_min_celsius_unitless = probe_min
+            sensor.probe_alert_max_celsius_unitless = probe_max
+
+            (sensor_min, sensor_max) = get_alert_settings(
+                soup, device_id, device_type, 'sensor')
+            sensor.sensor_alert_min_celsius_unitless = sensor_min
+            sensor.sensor_alert_max_celsius_unitless = sensor_max
+
+            (humidity_min, humidity_max) = get_alert_settings(
+                soup, device_id, device_type, 'humidity')
+            sensor.humidity_alert_min_unitless = humidity_min
+            sensor.humidity_alert_max_unitless = humidity_max
+
+            sensor.save()
 
             device_table = soup.find(
                 'tbody', {'id': 'dTable_{}'.format(device_id)}).parent

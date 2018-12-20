@@ -26,6 +26,37 @@ class Sensor(models.Model):
         unique=True,
     )
 
+    humidity_alert_min_unitless = models.SmallIntegerField(
+        blank=True,
+        help_text='',
+        null=True,
+    )
+    humidity_alert_max_unitless = models.SmallIntegerField(
+        blank=True,
+        help_text='',
+        null=True,
+    )
+    probe_alert_min_celsius_unitless = models.SmallIntegerField(
+        blank=True,
+        help_text='',
+        null=True,
+    )
+    probe_alert_max_celsius_unitless = models.SmallIntegerField(
+        blank=True,
+        help_text='',
+        null=True,
+    )
+    sensor_alert_min_celsius_unitless = models.SmallIntegerField(
+        blank=True,
+        help_text='',
+        null=True,
+    )
+    sensor_alert_max_celsius_unitless = models.SmallIntegerField(
+        blank=True,
+        help_text='',
+        null=True,
+    )
+
     def __str__(self):
         return self.location
 

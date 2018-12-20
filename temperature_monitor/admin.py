@@ -21,6 +21,12 @@ class SensorAdmin(admin.ModelAdmin):
         'serial_number',
         'timepoints_count',
         'device_type',
+        'probe_alert_min_celsius_unitless',
+        'probe_alert_max_celsius_unitless',
+        'sensor_alert_min_celsius_unitless',
+        'sensor_alert_max_celsius_unitless',
+        'humidity_alert_min_unitless',
+        'humidity_alert_max_unitless',
     ]
 
     def timepoints_count(self, obj):

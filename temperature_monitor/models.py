@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -20,8 +21,26 @@ class Sensor(models.Model):
         return self.location
 
     @property
+    def humidity(self):
+        return self.timepoints.latest().humidity
+
+    @property
     def last_seen(self):
         return self.timepoints.latest().time
+
+    @property
+    def probe_temp(self):
+        if getattr(settings, 'TEMPERATURE_MONITOR_UNIT', 'C') is 'F':
+            return self.timepoints.latest().probe_farhenheit
+        else:
+            return self.timepoints.latest().probe_celsius
+
+    @property
+    def sensor_temp(self):
+        if getattr(settings, 'TEMPERATURE_MONITOR_UNIT', 'C') is 'F':
+            return self.timepoints.latest().sensor_farhenheit
+        else:
+            return self.timepoints.latest().sensor_celsius
 
     class Meta:
         ordering = ['location']

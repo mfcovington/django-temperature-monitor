@@ -56,6 +56,13 @@ Specify the La Crosse Alerts login credentials in ``settings.py``:
     LA_CROSSE_ALERTS_PASSWORD = ''
 
 
+Specify the preferred unit of temperature (``C`` or ``F``) in ``settings.py``:
+
+.. code-block:: python
+
+    TEMPERATURE_MONITOR_UNIT = 'C'
+
+
 Add the ``temperature_monitor`` URL to the site's ``urls.py``:
 
 .. code-block:: python

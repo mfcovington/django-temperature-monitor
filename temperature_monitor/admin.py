@@ -14,6 +14,9 @@ class SensorAdmin(admin.ModelAdmin):
     list_display = [
         'location',
         'last_seen',
+        'probe_temp',
+        'sensor_temp',
+        'humidity',
         'serial_number',
         'timepoints_count',
     ]

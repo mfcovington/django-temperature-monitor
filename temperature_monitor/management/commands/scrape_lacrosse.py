@@ -9,9 +9,14 @@ from django.core.management.base import BaseCommand
 import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
 
 from ...models import Sensor, TimePoint
+
+SELENIUM_BROWSER = getattr(settings, 'SELENIUM_BROWSER', 'firefox')
+if SELENIUM_BROWSER == 'chrome':
+    from selenium.webdriver.chrome.options import Options
+if SELENIUM_BROWSER == 'firefox':
+    from selenium.webdriver.firefox.options import Options
 
 
 def convert_f_to_c(temperature):
@@ -57,7 +62,10 @@ class Command(BaseCommand):
         print('Connecting to La Crosse Alerts site.')
         options = Options()
         options.set_headless(True)
-        driver = webdriver.Firefox(options=options)
+        if SELENIUM_BROWSER == 'chrome':
+            driver = webdriver.Chrome(options=options)
+        if SELENIUM_BROWSER == 'firefox':
+            driver = webdriver.Firefox(options=options)
         driver.get(url)
         driver.find_element_by_id('iLogEmail').send_keys(username)
         driver.find_element_by_id('iLogPass').send_keys(password)

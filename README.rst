@@ -63,6 +63,13 @@ Specify the preferred unit of temperature (``C`` or ``F``) in ``settings.py``:
     TEMPERATURE_MONITOR_UNIT = 'C'
 
 
+Set the (headless) browser to use for accessing the La Crosse Alerts site ``settings.py`` to ``chrome`` or ``firefox`` (default):
+
+.. code-block:: python
+
+    SELENIUM_BROWSER = 'chrome'
+
+
 Add the ``temperature_monitor`` URL to the site's ``urls.py``:
 
 .. code-block:: python

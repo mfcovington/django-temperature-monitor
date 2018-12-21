@@ -27,7 +27,7 @@ install_requires = [
 
 setup(
     name='django-temperature-monitor',
-    version='0.0.0',
+    version='0.1.0',
     packages=['temperature_monitor'],
     include_package_data=True,
     license='BSD License',

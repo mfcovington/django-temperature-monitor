@@ -18,10 +18,17 @@
     <div class="card mb-3">
       <div class="card-header bg-dark text-light">
         <h5 class="card-title mb-0">
+          <div class="btn-group btn-group-sm float-right mb-1" role="group" aria-label="">
+            {% if perms.temperature_monitor.change_sensor %}
+              <a href="{% url 'admin:temperature_monitor_sensor_change' sensor.pk %}" class="btn btn-primary py-0">
+                <span class="d-none d-md-inline">Edit Sensor</span><span class="d-md-none">Edit</span>
+              </a>
+            {% endif %}
+            <a href="http://www.lacrossealertsmobile.com/v1.2/#device-{{ sensor.serial_number }}" target="_blank" class="btn btn-info py-0">
+              <span class="d-none d-md-inline">La Crosse Alerts Mobile</span><span class="d-md-none">La Crosse</span>
+            </a>
+          </div>
           {{ sensor.location }}
-          {% if perms.temperature_monitor.change_sensor %}
-            <a href="{% url 'admin:temperature_monitor_sensor_change' sensor.pk %}" class="btn btn-primary btn-sm py-0 float-right">Edit Sensor</a>
-          {% endif %}
         </h5>
       </div>
       <div class="card-body">

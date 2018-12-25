@@ -1,0 +1,57 @@
+{% extends "temperature_monitor/base.html" %}
+{% load project_home %}
+
+{% block title %}Sensors | {{ block.super }}{% endblock %}
+
+{% block content %}
+  <div class="container">
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% project_home_breadcrumb_bs4 %}
+        <li class="breadcrumb-item active" aria-label="breadcrumb">Temperature Monitor</li>
+        <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">Sensors</li>
+      </ol>
+    </nav>
+
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col" class="text-left">Location</th>
+          <th scope="col" class="text-center">Time Since Last Seen</th>
+          <th scope="col" class="text-center">Probe Temp</th>
+          <th scope="col" class="text-center">Probe Range</th>
+          <th scope="col" class="text-center d-none d-sm-table-cell d-print-table-cell">Battery</th>
+          <th scope="col" class="text-center d-none d-md-table-cell d-print-table-cell">Link</th>
+          <th scope="col" class="text-center d-none d-md-table-cell d-print-table-cell">Sensor Temp</th>
+          <th scope="col" class="text-center d-none d-md-table-cell d-print-table-cell">Humidity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sensor in sensor_list %}
+          <tr class="clickable-row" data-href="{% url 'temperature_monitor:sensor_detail' sensor.pk %}">
+            <th scope="row" class="text-left">{{ sensor }}</th>
+            <td class="text-center {% if sensor.time_since_alert_b %}bg-danger text-light{% elif sensor.time_since_alert_a %}bg-warning{% endif %}">{{ sensor.last_seen|timesince }}</td>
+            <td class="text-center {% if sensor.probe_alert %}bg-danger text-light{% endif %}">{{ sensor.probe_temp|default:"-" }}</td>
+            <td class="text-center {% if sensor.probe_alert %}bg-danger text-light{% endif %}">{{ sensor.probe_range }}</td>
+            <td class="text-center d-none d-sm-table-cell d-print-table-cell {% if sensor.battery != 'Good' %}bg-danger text-light{% endif %}">{{ sensor.battery|default:"-" }}</td>
+            <td class="text-center d-none d-md-table-cell d-print-table-cell">{{ sensor.link|default:"-" }}</td>
+            <td class="text-center d-none d-md-table-cell d-print-table-cell {% if sensor.sensor_alert %}bg-danger text-light{% endif %}">{{ sensor.sensor_temp|default:"-" }}</td>
+            <td class="text-center d-none d-md-table-cell d-print-table-cell {% if sensor.humidity_alert %}bg-danger text-light{% endif %}">{{ sensor.humidity|default:"-" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+{% endblock content %}
+
+{% block footer %}
+  <script>
+    jQuery(document).ready(function($) {
+        $(".clickable-row").click(function() {
+            window.location = $(this).data("href");
+        });
+    });
+  </script>
+{% endblock footer %}

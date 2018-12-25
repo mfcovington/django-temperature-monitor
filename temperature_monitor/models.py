@@ -103,6 +103,14 @@ class Sensor(models.Model):
         return self.timepoints.latest().humidity
 
     @property
+    def humidity_alert(self):
+        humidity = self.timepoints.latest().humidity_unitless
+        low = float(self.humidity_alert_min_unitless or '-inf')
+        high = float(self.humidity_alert_max_unitless or 'inf')
+        if humidity and not low <= float(humidity) <= high:
+            return True
+
+    @property
     def humidity_range(self):
         return pretty_range(
             self.humidity_alert_min_unitless,
@@ -112,6 +120,14 @@ class Sensor(models.Model):
     @property
     def last_seen(self):
         return self.timepoints.latest().time
+
+    @property
+    def probe_alert(self):
+        temp = self.timepoints.latest().probe_celsius_unitless
+        low = float(self.probe_alert_min_celsius_unitless or '-inf')
+        high = float(self.probe_alert_max_celsius_unitless or 'inf')
+        if temp and not low <= float(temp) <= high:
+            return True
 
     @property
     def probe_range(self):
@@ -125,6 +141,14 @@ class Sensor(models.Model):
             return self.timepoints.latest().probe_farhenheit
         else:
             return self.timepoints.latest().probe_celsius
+
+    @property
+    def sensor_alert(self):
+        temp = self.timepoints.latest().sensor_celsius_unitless
+        low = float(self.sensor_alert_min_celsius_unitless or '-inf')
+        high = float(self.sensor_alert_max_celsius_unitless or 'inf')
+        if temp and not low <= float(temp) <= high:
+            return True
 
     @property
     def sensor_range(self):
@@ -142,6 +166,16 @@ class Sensor(models.Model):
     @property
     def time_since_last_seen(self):
         return self.timepoints.latest().time_since
+
+    @property
+    def time_since_alert_a(self):
+        return self.timepoints.latest().timedelta > datetime.timedelta(
+            seconds=60*60*3)
+
+    @property
+    def time_since_alert_b(self):
+        return self.timepoints.latest().timedelta > datetime.timedelta(
+            seconds=60*60*12)
 
     class Meta:
         ordering = ['location']
@@ -237,8 +271,12 @@ class TimePoint(models.Model):
 
     @property
     def time_since(self):
+        return humanize.naturaltime(self.timedelta)
+
+    @property
+    def timedelta(self):
         now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
-        return humanize.naturaltime(now - self.time)
+        return now - self.time
 
     class Meta:
         get_latest_by = ['time']

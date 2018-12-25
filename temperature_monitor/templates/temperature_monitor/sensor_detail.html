@@ -1,0 +1,69 @@
+{% extends "temperature_monitor/base.html" %}
+{% load project_home %}
+
+{% block title %}{{ sensor }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+  <div class="container">
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% project_home_breadcrumb_bs4 %}
+        <li class="breadcrumb-item active" aria-label="breadcrumb">Temperature Monitor</li>
+        <li class="breadcrumb-item active" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:sensor_list' %}">Sensors</a></li>
+        <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">{{ sensor }}</li>
+      </ol>
+    </nav>
+
+    <div class="card mb-3">
+      <div class="card-header bg-dark text-light">
+        <h5 class="card-title mb-0">
+          {{ sensor.location }}
+          {% if perms.temperature_monitor.change_sensor %}
+            <a href="{% url 'admin:temperature_monitor_sensor_change' sensor.pk %}" class="btn btn-primary btn-sm py-0 float-right">Edit Sensor</a>
+          {% endif %}
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if sensor.probe_range != "-" %}
+          <p class="mb-2"><strong>Probe Range:</strong> {{ sensor.probe_range }}</p>
+        {% endif %}
+        {% if sensor.sensor_range != "-" %}
+          <p class="mb-2"><strong>Sensor Range:</strong> {{ sensor.sensor_range }}</p>
+        {% endif %}
+        {% if sensor.humidity_range != "-" %}
+          <p class="mb-2"><strong>Humidity Range:</strong> {{ sensor.humidity_range }}</p>
+        {% endif %}
+        <p class="mb-2"><strong>Battery:</strong> {{ sensor.battery }}</p>
+        <p class="mb-2"><strong>Link:</strong> {{ sensor.link }}</p>
+      </div>
+    </div>
+
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="text-left">Time</th>
+          <th scope="col" class="text-center">Probe Temp</th>
+          <th scope="col" class="text-center">Sensor Temp</th>
+          <th scope="col" class="text-center">Humidity</th>
+          <th scope="col" class="text-center d-none d-md-table-cell d-print-table-cell"> Time Since</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for timepoint in sensor.timepoints.all|slice:":100" %}
+          <tr>
+            <td scope="row" class="text-left">
+              {{ timepoint.time.time }}
+              {% ifchanged %}- {{ timepoint.time.date }}{% endifchanged %}
+            </td>
+            <td class="text-center">{{ timepoint.probe_celsius|default:"-" }}</td>
+            <td class="text-center">{{ timepoint.sensor_celsius|default:"-" }}</td>
+            <td class="text-center">{{ timepoint.humidity|default:"-" }}</td>
+            <td class="text-center d-none d-md-table-cell d-print-table-cell">{{ timepoint.time|timesince }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+{% endblock content %}

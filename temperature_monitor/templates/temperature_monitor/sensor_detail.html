@@ -60,8 +60,8 @@
         {% for timepoint in sensor.timepoints.all|slice:":100" %}
           <tr>
             <td scope="row" class="text-left">
-              {{ timepoint.time.time }}
-              {% ifchanged %}- {{ timepoint.time.date }}{% endifchanged %}
+              {{ timepoint.time|time }}
+              {% ifchanged %}- {{ timepoint.time|date }}{% endifchanged %}
             </td>
             <td class="text-center">{{ timepoint.probe_celsius|default:"-" }}</td>
             <td class="text-center">{{ timepoint.sensor_celsius|default:"-" }}</td>

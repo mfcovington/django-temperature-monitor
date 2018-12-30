@@ -9,8 +9,13 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         {% project_home_breadcrumb_bs4 %}
-        <li class="breadcrumb-item active" aria-label="breadcrumb">Temperature Monitor</li>
-        <li class="breadcrumb-item active" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:sensor_list' %}">Sensors</a></li>
+        <li class="breadcrumb-item" aria-label="breadcrumb">Temperature Monitor</li>
+        {% if gateway %}
+          <li class="breadcrumb-item" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:gateway_list' %}">Gateways</a></li>
+          <li class="breadcrumb-item" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:gateway_detail' gateway.pk %}">{{ gateway.serial_number }}</a></li>
+        {% else %}
+          <li class="breadcrumb-item" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:sensor_list' %}">Sensors</a></li>
+        {% endif %}
         <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">{{ sensor }}</li>
       </ol>
     </nav>

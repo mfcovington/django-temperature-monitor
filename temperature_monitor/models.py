@@ -58,6 +58,14 @@ class Gateway(models.Model):
         return self.serial_number
 
     @property
+    def time_since_alert_a(self):
+        return self.timedelta > datetime.timedelta(seconds=60*60*0.5)
+
+    @property
+    def time_since_alert_b(self):
+        return self.timedelta > datetime.timedelta(seconds=60*60*3)
+
+    @property
     def time_since_last_seen(self):
         return humanize.naturaltime(self.timedelta)
 

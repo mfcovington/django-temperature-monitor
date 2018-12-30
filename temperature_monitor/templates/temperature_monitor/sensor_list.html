@@ -9,8 +9,13 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         {% project_home_breadcrumb_bs4 %}
-        <li class="breadcrumb-item active" aria-label="breadcrumb">Temperature Monitor</li>
-        <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">Sensors</li>
+        <li class="breadcrumb-item" aria-label="breadcrumb">Temperature Monitor</li>
+        {% if gateway %}
+          <li class="breadcrumb-item" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:gateway_list' %}">Gateways</a></li>
+          <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">{{ gateway.serial_number }}</li>
+        {% else %}
+          <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">Sensors</li>
+        {% endif %}
       </ol>
     </nav>
 
@@ -29,7 +34,7 @@
       </thead>
       <tbody>
         {% for sensor in sensor_list %}
-          <tr class="clickable-row" data-href="{% url 'temperature_monitor:sensor_detail' sensor.pk %}">
+          <tr class="clickable-row" data-href="{% url 'temperature_monitor:sensor_detail' sensor.pk %}{% if gateway %}?gateway_pk={{ gateway.pk }}{% endif %}">
             <th scope="row" class="text-left">{{ sensor }}</th>
             <td class="text-center {% if sensor.time_since_alert_b %}bg-danger text-light{% elif sensor.time_since_alert_a %}bg-warning{% endif %}">{{ sensor.last_seen|timesince }}</td>
             <td class="text-center {% if sensor.probe_alert %}bg-danger text-light{% endif %}">{{ sensor.probe_temp|default:"-" }}</td>

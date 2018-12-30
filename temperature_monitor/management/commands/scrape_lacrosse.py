@@ -129,7 +129,7 @@ class Command(BaseCommand):
                     humid_re = re.compile('(-?\d+\.\d)%')
                     temp_re = re.compile('(-?\d+\.\d)°(C|F)')
 
-                    m_humidity = humid_re.match('42.3%')
+                    m_humidity = humid_re.match(row['Humidity'])
                     if m_humidity is None:
                         timepoint.humidity_unitless = None
                     else:

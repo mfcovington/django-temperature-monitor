@@ -40,6 +40,8 @@ class SensorAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         'gateway',
+        'battery',
+        'link',
     ]
 
     def timepoints_count(self, obj):

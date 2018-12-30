@@ -1,6 +1,21 @@
 from django.contrib import admin
 
-from .models import Sensor, TimePoint
+from .models import Gateway, Sensor, TimePoint
+
+
+@admin.register(Gateway)
+class GatewayAdmin(admin.ModelAdmin):
+    list_display = [
+        'serial_number',
+        'last_seen',
+        'time_since_last_seen',
+        'sensors_count',
+        '_timezone',
+    ]
+
+    def sensors_count(self, obj):
+        return obj.sensors.count()
+    sensors_count.short_description = '# of Sensors'
 
 
 @admin.register(Sensor)
@@ -19,8 +34,12 @@ class SensorAdmin(admin.ModelAdmin):
         'sensor_range',
         'humidity',
         'humidity_range',
-        'serial_number',
         'device_type',
+        'serial_number',
+        'gateway',
+    ]
+    list_filter = [
+        'gateway',
     ]
 
     def timepoints_count(self, obj):

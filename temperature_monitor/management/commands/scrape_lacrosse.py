@@ -10,7 +10,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-from ...models import Sensor, TimePoint
+from ...models import Gateway, Sensor, TimePoint
 
 SELENIUM_BROWSER = getattr(settings, 'SELENIUM_BROWSER', 'firefox')
 if SELENIUM_BROWSER == 'chrome':
@@ -49,6 +49,29 @@ def get_alert_settings(soup, device_id, device_type, input_type):
     return (alert_min, alert_max)
 
 
+def get_gateway(soup, device_id, datetime_format='%m/%d/%Y, %I:%M:%S %p'):
+    settings_summary = soup.find(
+        id='device-{}-settings-summary'.format(device_id)).find(
+        'ul', class_='sSetting')
+    gateway_re = re.compile('Associated Gateway ID: (\d+)')
+    gateway_id = gateway_re.match(settings_summary.find(string=gateway_re))[1]
+    gateway, created = Gateway.objects.get_or_create(
+        serial_number=gateway_id)
+
+    gateway_tz = settings_summary.span.attrs['data-timezone']
+    if gateway_tz:
+        tz = pytz.timezone(gateway_tz)
+    else:
+        tz = pytz.timezone(settings.TIME_ZONE)
+    gateway_timestamp = datetime.datetime.strptime(
+        settings_summary.span.text, datetime_format)
+    gateway.last_seen = tz.localize(gateway_timestamp)
+    gateway._timezone = gateway_tz
+    gateway.save()
+
+    return gateway
+
+
 class Command(BaseCommand):
     def handle(self, **options):
         username = settings.LA_CROSSE_ALERTS_USERNAME
@@ -57,7 +80,6 @@ class Command(BaseCommand):
         url = 'http://www.lacrossealertsmobile.com/v1.2/'
         datetime_format = '%m/%d/%Y %I:%M %p'
         page_load_delay = 15
-        tz = pytz.timezone(settings.TIME_ZONE)
 
         print('Connecting to La Crosse Alerts site.')
         options = Options()
@@ -114,12 +136,14 @@ class Command(BaseCommand):
             sensor.humidity_alert_min_unitless = humidity_min
             sensor.humidity_alert_max_unitless = humidity_max
 
+            sensor.gateway = get_gateway(soup, device_id)
             sensor.save()
 
             device_table = soup.find(
                 'tbody', {'id': 'dTable_{}'.format(device_id)}).parent
             df = pd.read_html(str(device_table))[0]
 
+            tz = pytz.timezone(sensor.timezone)
             for index, row in df.iterrows():
                 timestamp = datetime.datetime.strptime(
                     row['Time Seen'], datetime_format)

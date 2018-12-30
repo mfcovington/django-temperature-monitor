@@ -36,6 +36,47 @@ def pretty_range(alert_min, alert_max, alert_type='temperature'):
             alert_min, unit, alert_max, unit)
 
 
+class Gateway(models.Model):
+    serial_number = models.CharField(
+        help_text='',
+        max_length=30,
+        unique=True,
+    )
+    last_seen = models.DateTimeField(
+        blank=True,
+        help_text='Time gateway was last seen.',
+        null=True,
+    )
+    _timezone = models.CharField(
+        blank=True,
+        help_text='Gateway\'s current time zone.',
+        max_length=30,
+        null=True,
+    )
+
+    def __str__(self):
+        return self.serial_number
+
+    @property
+    def time_since_last_seen(self):
+        return humanize.naturaltime(self.timedelta)
+
+    @property
+    def timedelta(self):
+        now = datetime.datetime.now(pytz.timezone(self.timezone))
+        if self.last_seen:
+            return now - self.last_seen
+        else:
+            return None
+
+    @property
+    def timezone(self):
+        if self._timezone:
+            return self._timezone
+        else:
+            return settings.TIME_ZONE
+
+
 class Sensor(models.Model):
     device_type = models.CharField(
         help_text='Sensor type.',
@@ -49,6 +90,14 @@ class Sensor(models.Model):
         help_text='',
         max_length=30,
         unique=True,
+    )
+    gateway = models.ForeignKey(
+        'Gateway',
+        blank=True,
+        help_text='Gateway this sensor is connected to.',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='sensors',
     )
 
     battery = models.CharField(
@@ -177,6 +226,13 @@ class Sensor(models.Model):
         return self.timepoints.latest().timedelta > datetime.timedelta(
             seconds=60*60*12)
 
+    @property
+    def timezone(self):
+        if self.gateway and self.gateway.timezone:
+            return self.gateway.timezone
+        else:
+            return settings.TIME_ZONE
+
     class Meta:
         ordering = ['location']
 
@@ -275,8 +331,15 @@ class TimePoint(models.Model):
 
     @property
     def timedelta(self):
-        now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
-        return now - self.time
+        if self.sensor.timezone:
+            timezone = self.sensor.timezone
+        else:
+            timezone = settings.TIME_ZONE
+        now = datetime.datetime.now(pytz.timezone(timezone))
+        if self.time:
+            return now - self.time
+        else:
+            return None
 
     class Meta:
         get_latest_by = ['time']

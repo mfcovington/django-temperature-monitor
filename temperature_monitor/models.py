@@ -110,6 +110,11 @@ class Query(models.Model):
         null=True,
     )
 
+    @property
+    def time_since(self):
+        now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
+        return humanize.naturaltime(now - self.time)
+
 
 class Sensor(models.Model):
     device_type = models.CharField(

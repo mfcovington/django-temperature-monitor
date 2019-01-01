@@ -22,6 +22,7 @@ class GatewayAdmin(admin.ModelAdmin):
 class QueryAdmin(admin.ModelAdmin):
     list_display = [
         'time',
+        'time_since',
         'duration',
         'gateway_count',
         'sensor_count',

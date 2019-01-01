@@ -18,6 +18,7 @@
       <thead>
         <tr>
           <th scope="col" class="text-left">Time</th>
+          <th scope="col" class="text-center d-none d-lg-table-cell d-print-table-cell">Time Since</th>
           <th scope="col" class="text-center d-none d-md-table-cell d-print-table-cell">Duration (s)</th>
           <th scope="col" class="text-center">Gateways</th>
           <th scope="col" class="text-center">Sensors</th>
@@ -31,6 +32,7 @@
               {{ query.time|time }}
               {% ifchanged %}- {{ query.time|date }}{% endifchanged %}
             </th>
+            <td class="text-center d-none d-lg-table-cell d-print-table-cell">{{ query.time_since }}</td>
             <td class="text-center d-none d-md-table-cell d-print-table-cell">{{ query.duration.total_seconds|default:"-" }}</td>
             <td class="text-center">{{ query.gateway_count }}</td>
             <td class="text-center">{{ query.sensor_count }}</td>

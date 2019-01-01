@@ -110,10 +110,16 @@ class Query(models.Model):
         null=True,
     )
 
+    def __str__(self):
+        return self.time
+
     @property
     def time_since(self):
         now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
         return humanize.naturaltime(now - self.time)
+
+    class Meta:
+        ordering = ['-time']
 
 
 class Sensor(models.Model):

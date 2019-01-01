@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic import DetailView, ListView
 
-from .models import Gateway, Sensor
+from .models import Gateway, Query, Sensor
 
 
 class GatewayDetail(PermissionRequiredMixin, DetailView):
@@ -25,6 +25,14 @@ class GatewayList(PermissionRequiredMixin, ListView):
     permission_denied_message = ('You do not have permission to view gateway '
         'lists.')
     permission_required = 'temperature_monitor.view_gateway'
+
+
+class QueryList(PermissionRequiredMixin, ListView):
+    context_object_name = 'query_list'
+    model = Query
+    permission_denied_message = ('You do not have permission to view query '
+        'lists.')
+    permission_required = 'temperature_monitor.view_query'
 
 
 class SensorDetail(PermissionRequiredMixin, DetailView):

@@ -1,0 +1,41 @@
+{% extends "temperature_monitor/base.html" %}
+{% load project_home %}
+
+{% block title %}Queries | {{ block.super }}{% endblock %}
+
+{% block content %}
+  <div class="container">
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% project_home_breadcrumb_bs4 %}
+        <li class="breadcrumb-item active" aria-label="breadcrumb">Temperature Monitor</li>
+        <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">Query Log</li>
+      </ol>
+    </nav>
+
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col" class="text-left">Time</th>
+          <th scope="col" class="text-center d-none d-md-table-cell d-print-table-cell">Duration (s)</th>
+          <th scope="col" class="text-center">Gateways</th>
+          <th scope="col" class="text-center">Sensors</th>
+          <th scope="col" class="text-center">Timepoints</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for query in query_list %}
+          <tr>
+            <th scope="row" class="text-left">{{ query.time }}</th>
+            <td class="text-center d-none d-md-table-cell d-print-table-cell">{{ query.duration.total_seconds|default:"-" }}</td>
+            <td class="text-center">{{ query.gateway_count }}</td>
+            <td class="text-center">{{ query.sensor_count }}</td>
+            <td class="text-center">{{ query.timepoint_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+{% endblock content %}

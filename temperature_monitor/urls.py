@@ -10,4 +10,5 @@ urlpatterns = [
     path('<int:pk>/', views.SensorDetail.as_view(), name='sensor_detail'),
     path('gateways/', views.GatewayList.as_view(), name='gateway_list'),
     path('gateways/<int:pk>/', views.GatewayDetail.as_view(), name='gateway_detail'),
+    path('queries/', views.QueryList.as_view(), name='query_list'),
 ]

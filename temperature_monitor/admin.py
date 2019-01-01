@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Gateway, Sensor, TimePoint
+from .models import Gateway, Query, Sensor, TimePoint
 
 
 @admin.register(Gateway)
@@ -16,6 +16,17 @@ class GatewayAdmin(admin.ModelAdmin):
     def sensors_count(self, obj):
         return obj.sensors.count()
     sensors_count.short_description = '# of Sensors'
+
+
+@admin.register(Query)
+class QueryAdmin(admin.ModelAdmin):
+    list_display = [
+        'time',
+        'duration',
+        'gateway_count',
+        'sensor_count',
+        'timepoint_count',
+    ]
 
 
 @admin.register(Sensor)

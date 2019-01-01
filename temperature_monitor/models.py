@@ -85,6 +85,32 @@ class Gateway(models.Model):
             return settings.TIME_ZONE
 
 
+class Query(models.Model):
+    time = models.DateTimeField(
+        blank=True,
+        help_text='Time query started.',
+        null=True,
+        unique=True,
+    )
+    gateway_count = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Number of gateways queried.',
+    )
+    sensor_count = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Number of sensors queried.',
+    )
+    timepoint_count = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Number of timepoints queried.',
+    )
+    duration = models.DurationField(
+        blank=True,
+        help_text='Duration of query (seconds).',
+        null=True,
+    )
+
+
 class Sensor(models.Model):
     device_type = models.CharField(
         help_text='Sensor type.',

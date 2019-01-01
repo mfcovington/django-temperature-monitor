@@ -10,7 +10,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-from ...models import Gateway, Sensor, TimePoint
+from ...models import Gateway, Query, Sensor, TimePoint
 
 SELENIUM_BROWSER = getattr(settings, 'SELENIUM_BROWSER', 'firefox')
 if SELENIUM_BROWSER == 'chrome':
@@ -74,6 +74,13 @@ def get_gateway(soup, device_id, datetime_format='%m/%d/%Y, %I:%M:%S %p'):
 
 class Command(BaseCommand):
     def handle(self, **options):
+        gateways_queried = set()
+        sensors_queried = set()
+        timepoints_queried = 0
+        query_started = datetime.datetime.now(
+            tz=pytz.timezone(settings.TIME_ZONE))
+        query = Query.objects.create(time=query_started)
+
         username = settings.LA_CROSSE_ALERTS_USERNAME
         password = settings.LA_CROSSE_ALERTS_PASSWORD
 
@@ -136,7 +143,8 @@ class Command(BaseCommand):
             sensor.humidity_alert_min_unitless = humidity_min
             sensor.humidity_alert_max_unitless = humidity_max
 
-            sensor.gateway = get_gateway(soup, device_id)
+            gateway = get_gateway(soup, device_id)
+            sensor.gateway = gateway
             sensor.save()
 
             device_table = soup.find(
@@ -178,8 +186,19 @@ class Command(BaseCommand):
                             m_sensor_temp[1])
 
                     timepoint.save()
+                    timepoints_queried += 1
                 else:
                     break
 
-        driver.quit()
+            gateways_queried.add(gateway.serial_number)
+            sensors_queried.add(sensor.serial_number)
+            query.gateway_count = len(gateways_queried)
+            query.sensor_count = len(sensors_queried)
+            query.timepoint_count = timepoints_queried
+            query.save()
 
+        query_finished = datetime.datetime.now(
+            tz=pytz.timezone(settings.TIME_ZONE))
+        query.duration = query_finished - query_started
+        query.save()
+        driver.quit()

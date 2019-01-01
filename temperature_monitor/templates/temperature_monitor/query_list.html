@@ -27,7 +27,10 @@
       <tbody>
         {% for query in query_list %}
           <tr>
-            <th scope="row" class="text-left">{{ query.time }}</th>
+            <th scope="row" class="text-left">
+              {{ query.time|time }}
+              {% ifchanged %}- {{ query.time|date }}{% endifchanged %}
+            </th>
             <td class="text-center d-none d-md-table-cell d-print-table-cell">{{ query.duration.total_seconds|default:"-" }}</td>
             <td class="text-center">{{ query.gateway_count }}</td>
             <td class="text-center">{{ query.sensor_count }}</td>

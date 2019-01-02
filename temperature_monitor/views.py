@@ -15,7 +15,7 @@ def home(request):
         'query_count': Query.objects.count(),
         'sensor_count': Sensor.objects.count(),
         'gateway_alert': True in [g.alert for g in Gateway.objects.all()],
-        'query_alert': False,    # Need to implement
+        'query_alert': Query.objects.latest().alert,
         'sensor_alert': True in [s.alert for s in Sensor.objects.all()],
     }
     return render(request, 'temperature_monitor/home.html', context)

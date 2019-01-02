@@ -115,14 +115,36 @@ class Query(models.Model):
     )
 
     def __str__(self):
-        return self.time
+        return str(self.time)
+
+    @property
+    def alert(self):
+        return (self.gateway_alert or self.query_alert or self.sensor_alert
+            or self.timepoint_alert)
+
+    @property
+    def gateway_alert(self):
+        return self.gateway_count == 0
+
+    @property
+    def query_alert(self):
+        return self.duration is None
+
+    @property
+    def sensor_alert(self):
+        return self.sensor_count == 0
 
     @property
     def time_since(self):
         now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
         return humanize.naturaltime(now - self.time)
 
+    @property
+    def timepoint_alert(self):
+        return self.timepoint_count == 0
+
     class Meta:
+        get_latest_by = ['time']
         ordering = ['-time']
 
 

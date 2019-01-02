@@ -33,10 +33,10 @@
               {% ifchanged %}- {{ query.time|date }}{% endifchanged %}
             </th>
             <td class="text-center d-none d-lg-table-cell d-print-table-cell">{{ query.time_since }}</td>
-            <td class="text-center d-none d-md-table-cell d-print-table-cell">{{ query.duration.total_seconds|default:"-" }}</td>
-            <td class="text-center">{{ query.gateway_count }}</td>
-            <td class="text-center">{{ query.sensor_count }}</td>
-            <td class="text-center">{{ query.timepoint_count }}</td>
+            <td class="text-center d-none d-md-table-cell d-print-table-cell  {% if query.query_alert %}bg-danger text-light{% endif %}">{{ query.duration.total_seconds|default:"-" }}</td>
+            <td class="text-center {% if query.gateway_alert %}bg-danger text-light{% endif %}">{{ query.gateway_count }}</td>
+            <td class="text-center {% if query.sensor_alert %}bg-danger text-light{% endif %}">{{ query.sensor_count }}</td>
+            <td class="text-center {% if query.timepoint_alert %}bg-danger text-light{% endif %}">{{ query.timepoint_count }}</td>
           </tr>
         {% endfor %}
       </tbody>

@@ -86,7 +86,8 @@ class Command(BaseCommand):
 
         url = 'http://www.lacrossealertsmobile.com/v1.2/'
         datetime_format = '%m/%d/%Y %I:%M %p'
-        page_load_delay = 15
+        page_load_delay = getattr(
+            settings, 'LA_CROSSE_ALERTS_PAGE_LOAD_DELAY', 15)
 
         print('Connecting to La Crosse Alerts site.')
         options = Options()

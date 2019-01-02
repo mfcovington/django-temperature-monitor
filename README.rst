@@ -57,6 +57,13 @@ Specify the La Crosse Alerts login credentials in ``settings.py``:
     LA_CROSSE_ALERTS_PASSWORD = ''
 
 
+When querying the La Crosse Alerts site, we wait 15 seconds for the page to load. If no records are being returned, you may need to increase the page load delay by adjusting ``LA_CROSSE_ALERTS_PAGE_LOAD_DELAY`` in ``settings.py``:
+
+.. code-block:: python
+
+    LA_CROSSE_ALERTS_PAGE_LOAD_DELAY = 20
+
+
 Specify the preferred unit of temperature (``C`` or ``F``) in ``settings.py``:
 
 .. code-block:: python

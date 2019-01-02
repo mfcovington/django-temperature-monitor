@@ -1,0 +1,62 @@
+{% extends "temperature_monitor/base.html" %}
+{% load humanize project_home staticfiles %}
+
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+  <div class="container">
+
+    {% project_home_url as project_home_url %}
+    {% if project_home_url %}
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          {% project_home_breadcrumb_bs4 %}
+          <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">Temperature Monitor</li>
+        </ol>
+      </nav>
+    {% endif %}
+
+    <div class="card text-dark bg-light mb-3 text-center">
+
+      <div class="card-body">
+        <h1 class="card-title mb-4">
+          Temperature Monitor
+        </h1>
+        <div class="row">
+
+          <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="card {% if sensor_alert %}bg-danger{% else %}bg-primary{% endif %} mb-4">
+              <a href="{% url 'temperature_monitor:sensor_list' %}" class="card-link text-light">
+                <div class="card-body">
+                  <h4 class="card-title text-center my-5">{{ sensor_count }} Sensor{{ sensor_count|pluralize }}</h4>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="card {% if gateway_alert %}bg-danger{% else %}bg-primary{% endif %} mb-4">
+              <a href="{% url 'temperature_monitor:gateway_list' %}" class="card-link text-light">
+                <div class="card-body">
+                  <h4 class="card-title text-center my-5">{{ gateway_count }} Gateway{{ gateway_count|pluralize }}</h4>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="card {% if query_alert %}bg-danger{% else %}bg-primary{% endif %} mb-4">
+              <a href="{% url 'temperature_monitor:query_list' %}" class="card-link text-light">
+                <div class="card-body">
+                  <h4 class="card-title text-center my-5">{{ query_count|intcomma }} Quer{{ query_count|pluralize:"y,ies" }}</h4>
+                </div>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock content %}

@@ -19,7 +19,6 @@ install_requires = [
     "Django>=2,<3",    # Need to find minimum version that works
     "beautifulsoup4>=4.6.3",    # Need to find minimum version that works
     "django-project-home-templatetags>=0.1.0",    # Need to find minimum version that works
-    "humanize>=0.5.1",    # Need to find minimum version that works
     "lxml>=4.2.5",    # Need to find minimum version that works
     "pandas>=0.23.4",    # Need to find minimum version that works
     "selenium>=3.141.0",    # Need to find minimum version that works

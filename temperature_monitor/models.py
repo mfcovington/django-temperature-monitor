@@ -58,6 +58,10 @@ class Gateway(models.Model):
         return self.serial_number
 
     @property
+    def alert(self):
+        return self.time_since_alert_a or self.time_since_alert_b
+
+    @property
     def time_since_alert_a(self):
         return self.timedelta > datetime.timedelta(seconds=60*60*0.5)
 
@@ -191,6 +195,11 @@ class Sensor(models.Model):
 
     def __str__(self):
         return self.location
+
+    @property
+    def alert(self):
+        return (self.humidity_alert or self.probe_alert or self.sensor_alert
+            or self.time_since_alert_a or self.time_since_alert_b)
 
     @property
     def humidity(self):

@@ -1,8 +1,24 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic import DetailView, ListView
 
 from .models import Gateway, Query, Sensor
+
+
+@login_required
+@permission_required(
+    'temperature_monitor.view_sensor', raise_exception=True)
+def home(request):
+    context = {
+        'gateway_count': Gateway.objects.count(),
+        'query_count': Query.objects.count(),
+        'sensor_count': Sensor.objects.count(),
+        'gateway_alert': True in [g.alert for g in Gateway.objects.all()],
+        'query_alert': False,    # Need to implement
+        'sensor_alert': True in [s.alert for s in Sensor.objects.all()],
+    }
+    return render(request, 'temperature_monitor/home.html', context)
 
 
 class GatewayDetail(PermissionRequiredMixin, DetailView):

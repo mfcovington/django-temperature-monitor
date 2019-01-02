@@ -35,6 +35,7 @@ Add ``temperature_monitor`` to ``INSTALLED_APPS``in ``settings.py``:
 
     INSTALLED_APPS = (
         ...
+        'django.contrib.humanize',
         'project_home_tags',
         'temperature_monitor',
     )

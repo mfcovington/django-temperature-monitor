@@ -16,6 +16,11 @@
   <body>
     <br>
     {% block content %}{% endblock %}
+    {% if latest_query %}
+      <div class="container">
+        <span class="float-right"><small><em>Last Update: {{ latest_query.time_since }}</em></small></span>
+      </div>
+    {% endif %}
     <br>
     <br>
     <br>

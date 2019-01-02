@@ -21,6 +21,7 @@ def home(request):
         'gateway_alert': True in [g.alert for g in Gateway.objects.all()],
         'query_alert': Query.objects.latest().alert,
         'sensor_alert': True in [s.alert for s in Sensor.objects.all()],
+        'latest_query': Query.objects.latest(),
     }
     return render(request, 'temperature_monitor/home.html', context)
 
@@ -48,6 +49,7 @@ class GatewayDetail(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['sensor_list'] = Sensor.objects.filter(gateway=self.object)
+        context['latest_query'] = Query.objects.latest()
         return context
 
 
@@ -58,6 +60,11 @@ class GatewayList(PermissionRequiredMixin, ListView):
         'lists.')
     permission_required = 'temperature_monitor.view_gateway'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['latest_query'] = Query.objects.latest()
+        return context
+
 
 class QueryList(PermissionRequiredMixin, ListView):
     context_object_name = 'query_list'
@@ -65,6 +72,11 @@ class QueryList(PermissionRequiredMixin, ListView):
     permission_denied_message = ('You do not have permission to view query '
         'lists.')
     permission_required = 'temperature_monitor.view_query'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['latest_query'] = Query.objects.latest()
+        return context
 
 
 class SensorDetail(PermissionRequiredMixin, DetailView):
@@ -76,6 +88,7 @@ class SensorDetail(PermissionRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['latest_query'] = Query.objects.latest()
         gateway_pk = self.request.GET.get('gateway_pk', None)
         if gateway_pk:
             context['gateway'] = Gateway.objects.get(pk=gateway_pk)
@@ -88,3 +101,8 @@ class SensorList(PermissionRequiredMixin, ListView):
     permission_denied_message = ('You do not have permission to view sensor '
         'lists.')
     permission_required = 'temperature_monitor.view_sensor'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['latest_query'] = Query.objects.latest()
+        return context

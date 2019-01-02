@@ -74,6 +74,10 @@ def get_gateway(soup, device_id, datetime_format='%m/%d/%Y, %I:%M:%S %p'):
 
 class Command(BaseCommand):
     def handle(self, **options):
+        if Query.objects.latest().timedelta.total_seconds() < 300:
+            print('Delaying query (last query was less than 5 minutes ago).')
+            return
+
         gateways_queried = set()
         sensors_queried = set()
         timepoints_queried = 0

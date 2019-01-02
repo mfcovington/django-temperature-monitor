@@ -135,9 +135,13 @@ class Query(models.Model):
         return self.sensor_count == 0
 
     @property
-    def time_since(self):
+    def timedelta(self):
         now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
-        return humanize.naturaltime(now - self.time)
+        return now - self.time
+
+    @property
+    def time_since(self):
+        return humanize.naturaltime(self.timedelta)
 
     @property
     def timepoint_alert(self):

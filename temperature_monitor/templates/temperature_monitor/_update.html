@@ -1,0 +1,9 @@
+<form id="update-la-crosse-alerts" action="{% url 'temperature_monitor:update' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.path }}">
+  <div class="form-group inline-form-buttons">
+    <button type="submit" class="btn btn-sm btn-success py-0">
+      Update
+    </button>
+  </div>
+</form>

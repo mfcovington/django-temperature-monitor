@@ -20,6 +20,14 @@
       </ol>
     </nav>
 
+    {% if perms.temperature_monitor.add_sensor %}
+      <div class="container">
+        <div class="row justify-content-md-end">
+          {% include "temperature_monitor/_update.html" %}
+        </div>
+      </div>
+    {% endif %}
+
     <div class="card mb-3">
       <div class="card-header bg-dark text-light">
         <h5 class="card-title mb-0">

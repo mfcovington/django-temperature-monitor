@@ -12,4 +12,5 @@ urlpatterns = [
     path('queries/', views.QueryList.as_view(), name='query_list'),
     path('sensors/', views.SensorList.as_view(), name='sensor_list'),
     path('sensors/<int:pk>/', views.SensorDetail.as_view(), name='sensor_detail'),
+    path('update/', views.update, name='update'),
 ]

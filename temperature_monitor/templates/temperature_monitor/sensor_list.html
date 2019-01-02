@@ -19,6 +19,9 @@
       </ol>
     </nav>
 
+    {% if perms.temperature_monitor.add_sensor %}
+      <span class="float-right ml-2 mb-0 pb-0">{% include "temperature_monitor/_update.html" %}</span>
+    {% endif %}
     <table class="table table-hover">
       <thead>
         <tr>

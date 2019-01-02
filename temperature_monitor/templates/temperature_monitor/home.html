@@ -54,6 +54,18 @@
             </div>
           </div>
 
+          {% if perms.temperature_monitor.add_sensor %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="card bg-info mb-4">
+                <a href="{% url 'temperature_monitor:update' %}" class="card-link text-light">
+                  <div class="card-body">
+                    <h4 class="card-title text-center my-5">Update</h4>
+                  </div>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+
         </div>
       </div>
 

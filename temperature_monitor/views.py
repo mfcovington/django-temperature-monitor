@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core import management
@@ -33,6 +34,8 @@ def home(request):
         'query_alert': query_alert,
         'sensor_alert': True in [s.alert for s in Sensor.objects.all()],
         'latest_query': latest_query(),
+        'update_delay': 60 * getattr(
+            settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5),
     }
     return render(request, 'temperature_monitor/home.html', context)
 
@@ -61,6 +64,8 @@ class GatewayDetail(PermissionRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['sensor_list'] = Sensor.objects.filter(gateway=self.object)
         context['latest_query'] = latest_query()
+        context['update_delay'] = 60 * getattr(
+            settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
         return context
 
 
@@ -74,6 +79,8 @@ class GatewayList(PermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['latest_query'] = latest_query()
+        context['update_delay'] = 60 * getattr(
+            settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
         return context
 
 
@@ -87,6 +94,8 @@ class QueryList(PermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['latest_query'] = latest_query()
+        context['update_delay'] = 60 * getattr(
+            settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
         return context
 
 
@@ -100,6 +109,8 @@ class SensorDetail(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['latest_query'] = latest_query()
+        context['update_delay'] = 60 * getattr(
+            settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
         gateway_pk = self.request.GET.get('gateway_pk', None)
         if gateway_pk:
             context['gateway'] = Gateway.objects.get(pk=gateway_pk)
@@ -116,4 +127,6 @@ class SensorList(PermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['latest_query'] = latest_query()
+        context['update_delay'] = 60 * getattr(
+            settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
         return context

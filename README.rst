@@ -64,6 +64,13 @@ When querying the La Crosse Alerts site, we wait 15 seconds for the page to load
     LA_CROSSE_ALERTS_PAGE_LOAD_DELAY = 20
 
 
+Queries of the La Crosse Alerts site are prevented if the previous query occured lass than 5 minutes prior. This update delay can be modified by adjusting ``LA_CROSSE_ALERTS_UPDATE_DELAY`` in ``settings.py``:
+
+.. code-block:: python
+
+    LA_CROSSE_ALERTS_UPDATE_DELAY = 10
+
+
 Specify the preferred unit of temperature (``C`` or ``F``) in ``settings.py``:
 
 .. code-block:: python

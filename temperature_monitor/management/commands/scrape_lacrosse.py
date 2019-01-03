@@ -86,7 +86,9 @@ class Command(BaseCommand):
             time_since_query = Query.objects.latest().timedelta.total_seconds()
         except:
             time_since_query = math.inf
-        if time_since_query < 300 and not options['force']:
+        update_delay = 60 * getattr(
+            settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
+        if time_since_query < update_delay and not options['force']:
             print('Delaying query (last query was less than 5 minutes ago).')
             return
 

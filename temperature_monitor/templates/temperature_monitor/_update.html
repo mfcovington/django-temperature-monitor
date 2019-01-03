@@ -2,7 +2,7 @@
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ request.path }}">
   <div class="form-group inline-form-buttons">
-    <button type="submit" class="btn btn-sm btn-success py-0 {% if latest_query and latest_query.timedelta.total_seconds < 300 %}disabled{% endif %}">
+    <button type="submit" class="btn btn-sm btn-success py-0 {% if latest_query and latest_query.timedelta.total_seconds < update_delay %}disabled{% endif %}">
       Update
     </button>
   </div>

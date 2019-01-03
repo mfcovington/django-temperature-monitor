@@ -35,6 +35,7 @@ Add ``temperature_monitor`` to ``INSTALLED_APPS``in ``settings.py``:
 
     INSTALLED_APPS = (
         ...
+        'django.contrib.humanize',
         'project_home_tags',
         'temperature_monitor',
     )
@@ -56,11 +57,32 @@ Specify the La Crosse Alerts login credentials in ``settings.py``:
     LA_CROSSE_ALERTS_PASSWORD = ''
 
 
+When querying the La Crosse Alerts site, we wait 15 seconds for the page to load. If no records are being returned, you may need to increase the page load delay by adjusting ``LA_CROSSE_ALERTS_PAGE_LOAD_DELAY`` in ``settings.py``:
+
+.. code-block:: python
+
+    LA_CROSSE_ALERTS_PAGE_LOAD_DELAY = 20
+
+
+Queries of the La Crosse Alerts site are prevented if the previous query occured lass than 5 minutes prior. This update delay can be modified by adjusting ``LA_CROSSE_ALERTS_UPDATE_DELAY`` in ``settings.py``:
+
+.. code-block:: python
+
+    LA_CROSSE_ALERTS_UPDATE_DELAY = 10
+
+
 Specify the preferred unit of temperature (``C`` or ``F``) in ``settings.py``:
 
 .. code-block:: python
 
     TEMPERATURE_MONITOR_UNIT = 'C'
+
+
+Set the (headless) browser to use for accessing the La Crosse Alerts site ``settings.py`` to ``chrome`` or ``firefox`` (default):
+
+.. code-block:: python
+
+    SELENIUM_BROWSER = 'chrome'
 
 
 Add the ``temperature_monitor`` URL to the site's ``urls.py``:
@@ -105,4 +127,4 @@ Usage
 - Visit: ``http://127.0.0.1:8000/temperatures/``
 
 
-*Version 0.1.0*
+*Version 0.2.0*

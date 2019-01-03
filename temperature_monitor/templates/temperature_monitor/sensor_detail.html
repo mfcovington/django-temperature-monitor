@@ -1,0 +1,89 @@
+{% extends "temperature_monitor/base.html" %}
+{% load project_home %}
+
+{% block title %}{{ sensor }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+  <div class="container">
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% project_home_breadcrumb_bs4 %}
+        <li class="breadcrumb-item active" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:home' %}">Temperature Monitor</a></li>
+        {% if gateway %}
+          <li class="breadcrumb-item" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:gateway_list' %}">Gateways</a></li>
+          <li class="breadcrumb-item" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:gateway_detail' gateway.pk %}">{{ gateway.serial_number }}</a></li>
+        {% else %}
+          <li class="breadcrumb-item" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:sensor_list' %}">Sensors</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">{{ sensor }}</li>
+      </ol>
+    </nav>
+
+    {% if perms.temperature_monitor.add_sensor %}
+      <div class="container">
+        <div class="row justify-content-md-end">
+          {% include "temperature_monitor/_update.html" %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="card mb-3">
+      <div class="card-header bg-dark text-light">
+        <h5 class="card-title mb-0">
+          <div class="btn-group btn-group-sm float-right mb-1" role="group" aria-label="">
+            {% if perms.temperature_monitor.change_sensor %}
+              <a href="{% url 'admin:temperature_monitor_sensor_change' sensor.pk %}" class="btn btn-primary py-0">
+                <span class="d-none d-md-inline">Edit Sensor</span><span class="d-md-none">Edit</span>
+              </a>
+            {% endif %}
+            <a href="http://www.lacrossealertsmobile.com/v1.2/#device-{{ sensor.serial_number }}" target="_blank" class="btn btn-info py-0">
+              <span class="d-none d-md-inline">La Crosse Alerts Mobile</span><span class="d-md-none">La Crosse</span>
+            </a>
+          </div>
+          {{ sensor.location }}
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if sensor.probe_range != "-" %}
+          <p class="mb-2"><strong>Probe Range:</strong> {{ sensor.probe_range }}</p>
+        {% endif %}
+        {% if sensor.sensor_range != "-" %}
+          <p class="mb-2"><strong>Sensor Range:</strong> {{ sensor.sensor_range }}</p>
+        {% endif %}
+        {% if sensor.humidity_range != "-" %}
+          <p class="mb-2"><strong>Humidity Range:</strong> {{ sensor.humidity_range }}</p>
+        {% endif %}
+        <p class="mb-2"><strong>Battery:</strong> {{ sensor.battery }}</p>
+        <p class="mb-2"><strong>Link:</strong> {{ sensor.link }}</p>
+      </div>
+    </div>
+
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="text-left">Time</th>
+          <th scope="col" class="text-center">Probe Temp</th>
+          <th scope="col" class="text-center">Sensor Temp</th>
+          <th scope="col" class="text-center">Humidity</th>
+          <th scope="col" class="text-center d-none d-md-table-cell d-print-table-cell"> Time Since</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for timepoint in sensor.timepoints.all|slice:":100" %}
+          <tr>
+            <td scope="row" class="text-left">
+              {{ timepoint.time|time }}
+              {% ifchanged %}- {{ timepoint.time|date }}{% endifchanged %}
+            </td>
+            <td class="text-center">{{ timepoint.probe_celsius|default:"-" }}</td>
+            <td class="text-center">{{ timepoint.sensor_celsius|default:"-" }}</td>
+            <td class="text-center">{{ timepoint.humidity|default:"-" }}</td>
+            <td class="text-center d-none d-md-table-cell d-print-table-cell">{{ timepoint.time|timesince }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+{% endblock content %}

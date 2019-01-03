@@ -36,6 +36,122 @@ def pretty_range(alert_min, alert_max, alert_type='temperature'):
             alert_min, unit, alert_max, unit)
 
 
+class Gateway(models.Model):
+    serial_number = models.CharField(
+        help_text='',
+        max_length=30,
+        unique=True,
+    )
+    last_seen = models.DateTimeField(
+        blank=True,
+        help_text='Time gateway was last seen.',
+        null=True,
+    )
+    _timezone = models.CharField(
+        blank=True,
+        help_text='Gateway\'s current time zone.',
+        max_length=30,
+        null=True,
+    )
+
+    def __str__(self):
+        return self.serial_number
+
+    @property
+    def alert(self):
+        return self.time_since_alert_a or self.time_since_alert_b
+
+    @property
+    def time_since_alert_a(self):
+        return self.timedelta > datetime.timedelta(seconds=60*60*0.5)
+
+    @property
+    def time_since_alert_b(self):
+        return self.timedelta > datetime.timedelta(seconds=60*60*3)
+
+    @property
+    def time_since_last_seen(self):
+        return humanize.naturaltime(self.timedelta)
+
+    @property
+    def timedelta(self):
+        now = datetime.datetime.now(pytz.timezone(self.timezone))
+        if self.last_seen:
+            return now - self.last_seen
+        else:
+            return None
+
+    @property
+    def timezone(self):
+        if self._timezone:
+            return self._timezone
+        else:
+            return settings.TIME_ZONE
+
+
+class Query(models.Model):
+    time = models.DateTimeField(
+        blank=True,
+        help_text='Time query started.',
+        null=True,
+        unique=True,
+    )
+    gateway_count = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Number of gateways queried.',
+    )
+    sensor_count = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Number of sensors queried.',
+    )
+    timepoint_count = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Number of timepoints queried.',
+    )
+    duration = models.DurationField(
+        blank=True,
+        help_text='Duration of query (seconds).',
+        null=True,
+    )
+
+    def __str__(self):
+        return str(self.time)
+
+    @property
+    def alert(self):
+        return (self.gateway_alert or self.query_alert or self.sensor_alert
+            or self.timepoint_alert)
+
+    @property
+    def gateway_alert(self):
+        return self.gateway_count == 0
+
+    @property
+    def query_alert(self):
+        return self.duration is None
+
+    @property
+    def sensor_alert(self):
+        return self.sensor_count == 0
+
+    @property
+    def timedelta(self):
+        now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
+        return now - self.time
+
+    @property
+    def time_since(self):
+        return humanize.naturaltime(self.timedelta)
+
+    @property
+    def timepoint_alert(self):
+        return self.timepoint_count == 0
+
+    class Meta:
+        get_latest_by = ['time']
+        ordering = ['-time']
+
+
 class Sensor(models.Model):
     device_type = models.CharField(
         help_text='Sensor type.',
@@ -49,6 +165,14 @@ class Sensor(models.Model):
         help_text='',
         max_length=30,
         unique=True,
+    )
+    gateway = models.ForeignKey(
+        'Gateway',
+        blank=True,
+        help_text='Gateway this sensor is connected to.',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='sensors',
     )
 
     battery = models.CharField(
@@ -99,8 +223,24 @@ class Sensor(models.Model):
         return self.location
 
     @property
+    def alert(self):
+        return (self.humidity_alert or self.probe_alert or self.sensor_alert
+            or self.time_since_alert_a or self.time_since_alert_b)
+
+    @property
     def humidity(self):
         return self.timepoints.latest().humidity
+
+    @property
+    def humidity_alert(self):
+        try:
+            humidity = self.timepoints.latest().humidity_unitless
+        except:
+            humidity = None
+        low = float(self.humidity_alert_min_unitless or '-inf')
+        high = float(self.humidity_alert_max_unitless or 'inf')
+        if humidity and not low <= float(humidity) <= high:
+            return True
 
     @property
     def humidity_range(self):
@@ -114,6 +254,17 @@ class Sensor(models.Model):
         return self.timepoints.latest().time
 
     @property
+    def probe_alert(self):
+        try:
+            temp = self.timepoints.latest().probe_celsius_unitless
+        except:
+            temp = None
+        low = float(self.probe_alert_min_celsius_unitless or '-inf')
+        high = float(self.probe_alert_max_celsius_unitless or 'inf')
+        if temp and not low <= float(temp) <= high:
+            return True
+
+    @property
     def probe_range(self):
         return pretty_range(
             self.probe_alert_min_celsius_unitless,
@@ -125,6 +276,17 @@ class Sensor(models.Model):
             return self.timepoints.latest().probe_farhenheit
         else:
             return self.timepoints.latest().probe_celsius
+
+    @property
+    def sensor_alert(self):
+        try:
+            temp = self.timepoints.latest().sensor_celsius_unitless
+        except:
+            temp = None
+        low = float(self.sensor_alert_min_celsius_unitless or '-inf')
+        high = float(self.sensor_alert_max_celsius_unitless or 'inf')
+        if temp and not low <= float(temp) <= high:
+            return True
 
     @property
     def sensor_range(self):
@@ -142,6 +304,29 @@ class Sensor(models.Model):
     @property
     def time_since_last_seen(self):
         return self.timepoints.latest().time_since
+
+    @property
+    def time_since_alert_a(self):
+        return self.timedelta > datetime.timedelta(seconds=60*60*3)
+
+    @property
+    def time_since_alert_b(self):
+        return self.timedelta > datetime.timedelta(seconds=60*60*12)
+
+    @property
+    def timedelta(self):
+        try:
+            timedelta = self.timepoints.latest().timedelta
+        except:
+            timedelta = datetime.timedelta()
+        return timedelta
+
+    @property
+    def timezone(self):
+        if self.gateway and self.gateway.timezone:
+            return self.gateway.timezone
+        else:
+            return settings.TIME_ZONE
 
     class Meta:
         ordering = ['location']
@@ -237,8 +422,19 @@ class TimePoint(models.Model):
 
     @property
     def time_since(self):
-        now = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
-        return humanize.naturaltime(now - self.time)
+        return humanize.naturaltime(self.timedelta)
+
+    @property
+    def timedelta(self):
+        if self.sensor.timezone:
+            timezone = self.sensor.timezone
+        else:
+            timezone = settings.TIME_ZONE
+        now = datetime.datetime.now(pytz.timezone(timezone))
+        if self.time:
+            return now - self.time
+        else:
+            return None
 
     class Meta:
         get_latest_by = ['time']

@@ -1,4 +1,5 @@
 import datetime
+import math
 import pytz
 import re
 import time
@@ -9,9 +10,14 @@ from django.core.management.base import BaseCommand
 import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
 
-from ...models import Sensor, TimePoint
+from ...models import Gateway, Query, Sensor, TimePoint
+
+SELENIUM_BROWSER = getattr(settings, 'SELENIUM_BROWSER', 'firefox')
+if SELENIUM_BROWSER == 'chrome':
+    from selenium.webdriver.chrome.options import Options
+if SELENIUM_BROWSER == 'firefox':
+    from selenium.webdriver.firefox.options import Options
 
 
 def convert_f_to_c(temperature):
@@ -44,20 +50,70 @@ def get_alert_settings(soup, device_id, device_type, input_type):
     return (alert_min, alert_max)
 
 
+def get_gateway(soup, device_id, datetime_format='%m/%d/%Y, %I:%M:%S %p'):
+    settings_summary = soup.find(
+        id='device-{}-settings-summary'.format(device_id)).find(
+        'ul', class_='sSetting')
+    gateway_re = re.compile('Associated Gateway ID: (\d+)')
+    gateway_id = gateway_re.match(settings_summary.find(string=gateway_re))[1]
+    gateway, created = Gateway.objects.get_or_create(
+        serial_number=gateway_id)
+
+    gateway_tz = settings_summary.span.attrs['data-timezone']
+    if gateway_tz:
+        tz = pytz.timezone(gateway_tz)
+    else:
+        tz = pytz.timezone(settings.TIME_ZONE)
+    gateway_timestamp = datetime.datetime.strptime(
+        settings_summary.span.text, datetime_format)
+    gateway.last_seen = tz.localize(gateway_timestamp)
+    gateway._timezone = gateway_tz
+    gateway.save()
+
+    return gateway
+
+
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Force a query regardless of how recent latest query is.',
+        )
+
     def handle(self, **options):
+        try:
+            time_since_query = Query.objects.latest().timedelta.total_seconds()
+        except:
+            time_since_query = math.inf
+        update_delay = 60 * getattr(
+            settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
+        if time_since_query < update_delay and not options['force']:
+            print('Delaying query (last query was less than 5 minutes ago).')
+            return
+
+        gateways_queried = set()
+        sensors_queried = set()
+        timepoints_queried = 0
+        query_started = datetime.datetime.now(
+            tz=pytz.timezone(settings.TIME_ZONE))
+        query = Query.objects.create(time=query_started)
+
         username = settings.LA_CROSSE_ALERTS_USERNAME
         password = settings.LA_CROSSE_ALERTS_PASSWORD
 
         url = 'http://www.lacrossealertsmobile.com/v1.2/'
         datetime_format = '%m/%d/%Y %I:%M %p'
-        page_load_delay = 15
-        tz = pytz.timezone(settings.TIME_ZONE)
+        page_load_delay = getattr(
+            settings, 'LA_CROSSE_ALERTS_PAGE_LOAD_DELAY', 15)
 
         print('Connecting to La Crosse Alerts site.')
         options = Options()
         options.set_headless(True)
-        driver = webdriver.Firefox(options=options)
+        if SELENIUM_BROWSER == 'chrome':
+            driver = webdriver.Chrome(options=options)
+        if SELENIUM_BROWSER == 'firefox':
+            driver = webdriver.Firefox(options=options)
         driver.get(url)
         driver.find_element_by_id('iLogEmail').send_keys(username)
         driver.find_element_by_id('iLogPass').send_keys(password)
@@ -106,12 +162,15 @@ class Command(BaseCommand):
             sensor.humidity_alert_min_unitless = humidity_min
             sensor.humidity_alert_max_unitless = humidity_max
 
+            gateway = get_gateway(soup, device_id)
+            sensor.gateway = gateway
             sensor.save()
 
             device_table = soup.find(
                 'tbody', {'id': 'dTable_{}'.format(device_id)}).parent
             df = pd.read_html(str(device_table))[0]
 
+            tz = pytz.timezone(sensor.timezone)
             for index, row in df.iterrows():
                 timestamp = datetime.datetime.strptime(
                     row['Time Seen'], datetime_format)
@@ -121,7 +180,7 @@ class Command(BaseCommand):
                     humid_re = re.compile('(-?\d+\.\d)%')
                     temp_re = re.compile('(-?\d+\.\d)°(C|F)')
 
-                    m_humidity = humid_re.match('42.3%')
+                    m_humidity = humid_re.match(row['Humidity'])
                     if m_humidity is None:
                         timepoint.humidity_unitless = None
                     else:
@@ -146,8 +205,19 @@ class Command(BaseCommand):
                             m_sensor_temp[1])
 
                     timepoint.save()
+                    timepoints_queried += 1
                 else:
                     break
 
-        driver.quit()
+            gateways_queried.add(gateway.serial_number)
+            sensors_queried.add(sensor.serial_number)
+            query.gateway_count = len(gateways_queried)
+            query.sensor_count = len(sensors_queried)
+            query.timepoint_count = timepoints_queried
+            query.save()
 
+        query_finished = datetime.datetime.now(
+            tz=pytz.timezone(settings.TIME_ZONE))
+        query.duration = query_finished - query_started
+        query.save()
+        driver.quit()

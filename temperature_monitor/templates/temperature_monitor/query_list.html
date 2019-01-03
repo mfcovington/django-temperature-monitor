@@ -1,0 +1,49 @@
+{% extends "temperature_monitor/base.html" %}
+{% load project_home %}
+
+{% block title %}Queries | {{ block.super }}{% endblock %}
+
+{% block content %}
+  <div class="container">
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% project_home_breadcrumb_bs4 %}
+        <li class="breadcrumb-item active" aria-label="breadcrumb"><a href="{% url 'temperature_monitor:home' %}">Temperature Monitor</a></li>
+        <li class="breadcrumb-item active" aria-label="breadcrumb" aria-current="page">Query Log</li>
+      </ol>
+    </nav>
+
+    {% if perms.temperature_monitor.add_sensor %}
+      <span class="float-right ml-2 mb-0 pb-0">{% include "temperature_monitor/_update.html" %}</span>
+    {% endif %}
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="text-left">Time</th>
+          <th scope="col" class="text-center d-none d-lg-table-cell d-print-table-cell">Time Since</th>
+          <th scope="col" class="text-center d-none d-md-table-cell d-print-table-cell">Duration (s)</th>
+          <th scope="col" class="text-center">Gateways</th>
+          <th scope="col" class="text-center">Sensors</th>
+          <th scope="col" class="text-center">Timepoints</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for query in query_list|slice:":100" %}
+          <tr>
+            <th scope="row" class="text-left">
+              {{ query.time|time }}
+              {% ifchanged %}- {{ query.time|date }}{% endifchanged %}
+            </th>
+            <td class="text-center d-none d-lg-table-cell d-print-table-cell">{{ query.time_since }}</td>
+            <td class="text-center d-none d-md-table-cell d-print-table-cell  {% if query.query_alert %}bg-danger text-light{% endif %}">{{ query.duration.total_seconds|default:"-" }}</td>
+            <td class="text-center {% if query.gateway_alert %}bg-danger text-light{% endif %}">{{ query.gateway_count }}</td>
+            <td class="text-center {% if query.sensor_alert %}bg-danger text-light{% endif %}">{{ query.sensor_count }}</td>
+            <td class="text-center {% if query.timepoint_alert %}bg-danger text-light{% endif %}">{{ query.timepoint_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+{% endblock content %}

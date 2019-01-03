@@ -233,7 +233,10 @@ class Sensor(models.Model):
 
     @property
     def humidity_alert(self):
-        humidity = self.timepoints.latest().humidity_unitless
+        try:
+            humidity = self.timepoints.latest().humidity_unitless
+        except:
+            humidity = None
         low = float(self.humidity_alert_min_unitless or '-inf')
         high = float(self.humidity_alert_max_unitless or 'inf')
         if humidity and not low <= float(humidity) <= high:
@@ -252,7 +255,10 @@ class Sensor(models.Model):
 
     @property
     def probe_alert(self):
-        temp = self.timepoints.latest().probe_celsius_unitless
+        try:
+            temp = self.timepoints.latest().probe_celsius_unitless
+        except:
+            temp = None
         low = float(self.probe_alert_min_celsius_unitless or '-inf')
         high = float(self.probe_alert_max_celsius_unitless or 'inf')
         if temp and not low <= float(temp) <= high:
@@ -273,7 +279,10 @@ class Sensor(models.Model):
 
     @property
     def sensor_alert(self):
-        temp = self.timepoints.latest().sensor_celsius_unitless
+        try:
+            temp = self.timepoints.latest().sensor_celsius_unitless
+        except:
+            temp = None
         low = float(self.sensor_alert_min_celsius_unitless or '-inf')
         high = float(self.sensor_alert_max_celsius_unitless or 'inf')
         if temp and not low <= float(temp) <= high:
@@ -298,13 +307,19 @@ class Sensor(models.Model):
 
     @property
     def time_since_alert_a(self):
-        return self.timepoints.latest().timedelta > datetime.timedelta(
-            seconds=60*60*3)
+        return self.timedelta > datetime.timedelta(seconds=60*60*3)
 
     @property
     def time_since_alert_b(self):
-        return self.timepoints.latest().timedelta > datetime.timedelta(
-            seconds=60*60*12)
+        return self.timedelta > datetime.timedelta(seconds=60*60*12)
+
+    @property
+    def timedelta(self):
+        try:
+            timedelta = self.timepoints.latest().timedelta
+        except:
+            timedelta = datetime.timedelta()
+        return timedelta
 
     @property
     def timezone(self):

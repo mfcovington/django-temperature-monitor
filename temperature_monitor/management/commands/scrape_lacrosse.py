@@ -1,4 +1,5 @@
 import datetime
+import math
 import pytz
 import re
 import time
@@ -81,7 +82,10 @@ class Command(BaseCommand):
         )
 
     def handle(self, **options):
-        time_since_query = Query.objects.latest().timedelta.total_seconds()
+        try:
+            time_since_query = Query.objects.latest().timedelta.total_seconds()
+        except:
+            time_since_query = math.inf
         if time_since_query < 300 and not options['force']:
             print('Delaying query (last query was less than 5 minutes ago).')
             return

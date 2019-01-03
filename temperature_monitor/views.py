@@ -10,18 +10,29 @@ from .management.commands import scrape_lacrosse
 from .models import Gateway, Query, Sensor
 
 
+def latest_query():
+    try:
+        return Query.objects.latest()
+    except:
+        return None
+
+
 @login_required
 @permission_required(
     'temperature_monitor.view_sensor', raise_exception=True)
 def home(request):
+    try:
+        query_alert = latest_query().alert
+    except Exception as e:
+        query_alert = None
     context = {
         'gateway_count': Gateway.objects.count(),
         'query_count': Query.objects.count(),
         'sensor_count': Sensor.objects.count(),
         'gateway_alert': True in [g.alert for g in Gateway.objects.all()],
-        'query_alert': Query.objects.latest().alert,
+        'query_alert': query_alert,
         'sensor_alert': True in [s.alert for s in Sensor.objects.all()],
-        'latest_query': Query.objects.latest(),
+        'latest_query': latest_query(),
     }
     return render(request, 'temperature_monitor/home.html', context)
 
@@ -49,7 +60,7 @@ class GatewayDetail(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['sensor_list'] = Sensor.objects.filter(gateway=self.object)
-        context['latest_query'] = Query.objects.latest()
+        context['latest_query'] = latest_query()
         return context
 
 
@@ -62,7 +73,7 @@ class GatewayList(PermissionRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['latest_query'] = Query.objects.latest()
+        context['latest_query'] = latest_query()
         return context
 
 
@@ -75,7 +86,7 @@ class QueryList(PermissionRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['latest_query'] = Query.objects.latest()
+        context['latest_query'] = latest_query()
         return context
 
 
@@ -88,7 +99,7 @@ class SensorDetail(PermissionRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['latest_query'] = Query.objects.latest()
+        context['latest_query'] = latest_query()
         gateway_pk = self.request.GET.get('gateway_pk', None)
         if gateway_pk:
             context['gateway'] = Gateway.objects.get(pk=gateway_pk)
@@ -104,5 +115,5 @@ class SensorList(PermissionRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['latest_query'] = Query.objects.latest()
+        context['latest_query'] = latest_query()
         return context

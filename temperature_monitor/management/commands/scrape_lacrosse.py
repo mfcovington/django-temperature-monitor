@@ -73,8 +73,16 @@ def get_gateway(soup, device_id, datetime_format='%m/%d/%Y, %I:%M:%S %p'):
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Force a query regardless of how recent latest query is.',
+        )
+
     def handle(self, **options):
-        if Query.objects.latest().timedelta.total_seconds() < 300:
+        time_since_query = Query.objects.latest().timedelta.total_seconds()
+        if time_since_query < 300 and not options['force']:
             print('Delaying query (last query was less than 5 minutes ago).')
             return
 

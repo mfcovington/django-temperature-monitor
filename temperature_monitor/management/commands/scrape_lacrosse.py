@@ -109,6 +109,7 @@ class Command(BaseCommand):
 
         print('Connecting to La Crosse Alerts site.')
         options = Options()
+        options.add_argument('--no-sandbox')
         options.set_headless(True)
         if SELENIUM_BROWSER == 'chrome':
             driver = webdriver.Chrome(options=options)

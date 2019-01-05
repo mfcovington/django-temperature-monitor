@@ -2,13 +2,12 @@ from django.shortcuts import render
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core import management
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, ListView
 
-from .management.commands import scrape_lacrosse
 from .models import Gateway, Query, Sensor
+from .tasks import update as scrape_lacrosse
 
 
 def latest_query():
@@ -47,7 +46,11 @@ def update(request):
     """
     Manually query La Crosse Alerts site.
     """
-    management.call_command(scrape_lacrosse.Command())
+    try:
+        scrape_lacrosse.delay()
+    except:
+        scrape_lacrosse()
+
     next = request.POST.get('next', reverse('temperature_monitor:query_list'))
     return HttpResponseRedirect(next)
 

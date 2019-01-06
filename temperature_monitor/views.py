@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponseRedirect
@@ -48,6 +49,8 @@ def update(request):
     """
     try:
         scrape_lacrosse.delay()
+        message = 'Update started (should complete within 30-60 seconds).'
+        messages.success(request, message, extra_tags='alert-success')
     except:
         scrape_lacrosse()
 

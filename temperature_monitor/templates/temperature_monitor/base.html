@@ -15,6 +15,7 @@
 
   <body>
     <br>
+    {% include "temperature_monitor/_messages.html" %}
     {% block content %}{% endblock %}
     {% if latest_query %}
       <div class="container">

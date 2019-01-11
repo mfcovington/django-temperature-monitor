@@ -32,7 +32,10 @@ def home(request):
         'sensor_count': Sensor.objects.count(),
         'gateway_alert': True in [g.alert for g in Gateway.objects.all()],
         'query_alert': query_alert,
-        'sensor_alert': True in [s.alert for s in Sensor.objects.all()],
+        'sensor_alert_environment': True in [
+            s.alert_environment for s in Sensor.objects.all()],
+        'sensor_alert_time': True in [
+            s.alert_time for s in Sensor.objects.all()],
         'latest_query': latest_query(),
         'update_delay': 60 * getattr(
             settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5),

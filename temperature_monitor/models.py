@@ -224,8 +224,15 @@ class Sensor(models.Model):
 
     @property
     def alert(self):
-        return (self.humidity_alert or self.probe_alert or self.sensor_alert
-            or self.time_since_alert_a or self.time_since_alert_b)
+        return self.alert_environment or self.alert_time
+
+    @property
+    def alert_environment(self):
+        return self.humidity_alert or self.probe_alert or self.sensor_alert
+
+    @property
+    def alert_time(self):
+        return self.time_since_alert_a or self.time_since_alert_b
 
     @property
     def humidity(self):

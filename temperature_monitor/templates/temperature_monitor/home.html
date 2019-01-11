@@ -25,7 +25,7 @@
         <div class="row">
 
           <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="card {% if sensor_alert %}bg-danger{% else %}bg-primary{% endif %} mb-4">
+            <div class="card {% if sensor_alert_environment %}bg-danger{% elif sensor_alert_time %}bg-warning{% else %}bg-primary{% endif %} mb-4">
               <a href="{% url 'temperature_monitor:sensor_list' %}" class="card-link text-light">
                 <div class="card-body">
                   <h4 class="card-title text-center my-5">{{ sensor_count }} Sensor{{ sensor_count|pluralize }}</h4>

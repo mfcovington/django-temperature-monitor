@@ -178,7 +178,7 @@ class Sensor(models.Model):
     battery = models.CharField(
         blank=True,
         help_text='',
-        max_length=5,
+        max_length=7,
         null=True,
     )
     link = models.CharField(

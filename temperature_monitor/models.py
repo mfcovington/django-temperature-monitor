@@ -248,6 +248,8 @@ class Sensor(models.Model):
         high = float(self.humidity_alert_max_unitless or 'inf')
         if humidity and not low <= float(humidity) <= high:
             return True
+        else:
+            return False
 
     @property
     def humidity_range(self):
@@ -270,6 +272,8 @@ class Sensor(models.Model):
         high = float(self.probe_alert_max_celsius_unitless or 'inf')
         if temp and not low <= float(temp) <= high:
             return True
+        else:
+            return False
 
     @property
     def probe_range(self):
@@ -294,6 +298,8 @@ class Sensor(models.Model):
         high = float(self.sensor_alert_max_celsius_unitless or 'inf')
         if temp and not low <= float(temp) <= high:
             return True
+        else:
+            return False
 
     @property
     def sensor_range(self):

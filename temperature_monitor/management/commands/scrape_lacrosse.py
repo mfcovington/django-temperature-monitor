@@ -5,6 +5,7 @@ import re
 import time
 
 from django.conf import settings
+from django.core.mail import EmailMessage
 from django.core.management.base import BaseCommand
 
 import pandas as pd
@@ -22,6 +23,17 @@ if SELENIUM_BROWSER == 'firefox':
 
 def convert_f_to_c(temperature):
     return 5 * temperature / 9 - 32
+
+
+def email_query_summary(
+        duration, gateway_count, sensor_count, timepoint_count):
+    body = 'Query took {}. Gateways: {}; Sensors: {}; Timepoints: {}'.format(
+        duration, gateway_count, sensor_count, timepoint_count)
+    EMAIL_HOST_USER = getattr(settings, 'EMAIL_HOST_USER', None)
+    email = EmailMessage(
+        'Query Summary', body, from_email=EMAIL_HOST_USER,
+        to=['MikeCovington@AmaryllisNucleics.com'])
+    email.send()
 
 
 def get_alert_settings(soup, device_id, device_type, input_type):
@@ -76,19 +88,24 @@ def get_gateway(soup, device_id, datetime_format='%m/%d/%Y, %I:%M:%S %p'):
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
+            '--email',
+            action='store_true',
+            help='Email query summary.',
+        )
+        parser.add_argument(
             '--force',
             action='store_true',
             help='Force a query regardless of how recent latest query is.',
         )
 
-    def handle(self, **options):
+    def handle(self, **kwargs):
         try:
             time_since_query = Query.objects.latest().timedelta.total_seconds()
         except:
             time_since_query = math.inf
         update_delay = 60 * getattr(
             settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
-        if time_since_query < update_delay and not options['force']:
+        if time_since_query < update_delay and not kwargs['force']:
             print('Delaying query (last query was less than 5 minutes ago).')
             return
 
@@ -222,3 +239,13 @@ class Command(BaseCommand):
         query.duration = query_finished - query_started
         query.save()
         driver.quit()
+
+        if kwargs['email']:
+            try:
+                email_query_summary(
+                    query.duration, query.gateway_count, query.sensor_count,
+                    query.timepoint_count)
+            except:
+                print('Failed to email query summary.')
+            else:
+                print('Query summary emailed.')

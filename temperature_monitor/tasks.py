@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core import management
 from django.core.mail import EmailMessage
+from django.urls import reverse
 
 from celery import shared_task
 
@@ -16,6 +17,8 @@ def email_alerts(
     """
     Email current alerts.
     """
+    domain = settings.TEMPERATURE_MONITOR_SITE_DOMAIN
+
     alerts = get_alerts(
         battery=battery, gateway=gateway, humidity=humidity, link=link,
         probe=probe, query=query, sensor=sensor, time_since=time_since)
@@ -27,12 +30,17 @@ def email_alerts(
 
         for g_id, g_alerts in alerts['gateways'].items():
             g = Gateway.objects.get(id=g_id)
-            body += '\t- {}\n'.format(g.serial_number)
+            relative_uri = reverse(
+                'temperature_monitor:gateway_detail', kwargs={'pk': g_id})
+            absolute_uri = '{}{}'.format(domain, relative_uri)
+            body += '\t- {} ({})\n'.format(g.serial_number, absolute_uri)
             for alert_type, alert_status in g_alerts.items():
                 body += '\t\t- {}: {}\n'.format(alert_type, alert_status)
 
     if alerts['queries']:
-        body += '\nQuery Alerts\n\n'
+        relative_uri = reverse('temperature_monitor:query_list')
+        absolute_uri = '{}{}'.format(domain, relative_uri)
+        body += '\nQuery Alerts ({})\n\n'.format(absolute_uri)
 
         for q_id, q_alerts in alerts['queries'].items():
             q = Query.objects.get(id=q_id)
@@ -45,7 +53,10 @@ def email_alerts(
 
         for s_id, s_alerts in alerts['sensors'].items():
             s = Sensor.objects.get(id=s_id)
-            body += '\t- {}\n'.format(s.location)
+            relative_uri = reverse(
+                'temperature_monitor:sensor_detail', kwargs={'pk': s_id})
+            absolute_uri = '{}{}'.format(domain, relative_uri)
+            body += '\t- {} ({})\n'.format(s.location, absolute_uri)
             for alert_type, alert_status in s_alerts.items():
                 body += '\t\t- {}: {}\n'.format(alert_type, alert_status)
 

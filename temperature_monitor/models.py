@@ -58,8 +58,16 @@ class Gateway(models.Model):
         return self.serial_number
 
     @property
+    def active_sensors_count(self):
+        return self.sensors.filter(active=True).count()
+
+    @property
     def alert(self):
         return self.time_since_alert_a or self.time_since_alert_b
+
+    @property
+    def inactive_sensors_count(self):
+        return self.sensors.filter(active=False).count()
 
     @property
     def time_since_alert_a(self):
@@ -173,6 +181,9 @@ class Sensor(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         related_name='sensors',
+    )
+    active = models.BooleanField(
+        default=True,
     )
 
     battery = models.CharField(

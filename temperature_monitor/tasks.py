@@ -105,7 +105,7 @@ def get_alerts(
             if g.alert:
                 alerts['gateways'][g.id] = {'Last Seen': g.time_since_last_seen}
 
-    for s in Sensor.objects.all():
+    for s in Sensor.objects.filter(active=True):
         s_alerts = {}
         if battery:
             if s.battery != 'Good':

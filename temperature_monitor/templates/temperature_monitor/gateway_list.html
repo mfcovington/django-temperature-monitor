@@ -22,7 +22,8 @@
         <tr>
           <th scope="col" class="text-left">Serial Number</th>
           <th scope="col" class="text-center">Time Since Last Seen</th>
-          <th scope="col" class="text-center"># of Sensors</th>
+          <th scope="col" class="text-center"># of Active Sensors</th>
+          <th scope="col" class="text-center d-none d-sm-table-cell d-print-table-cell"># of Inactive Sensors</th>
           <th scope="col" class="text-center d-none d-sm-table-cell d-print-table-cell">Time Zone</th>
         </tr>
       </thead>
@@ -31,7 +32,8 @@
           <tr class="clickable-row" data-href="{% url 'temperature_monitor:gateway_detail' gateway.pk %}">
             <th scope="row" class="text-left">{{ gateway.serial_number }}</th>
             <td class="text-center {% if gateway.time_since_alert_b %}bg-danger text-light{% elif gateway.time_since_alert_a %}bg-warning{% endif %}">{{ gateway.last_seen|timesince }}</td>
-            <td class="text-center">{{ gateway.sensors.count|default:"-" }}</td>
+            <td class="text-center">{{ gateway.active_sensors_count|default:"-" }}</td>
+            <td class="text-center d-none d-sm-table-cell d-print-table-cell">{{ gateway.inactive_sensors_count|default:"-" }}</td>
             <td class="text-center d-none d-sm-table-cell d-print-table-cell">{{ gateway.timezone|default:"-" }}</td>
           </tr>
         {% endfor %}

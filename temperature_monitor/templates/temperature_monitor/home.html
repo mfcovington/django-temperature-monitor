@@ -28,7 +28,7 @@
             <div class="card {% if sensor_alert_environment %}bg-danger{% elif sensor_alert_time %}bg-warning{% else %}bg-primary{% endif %} mb-4">
               <a href="{% url 'temperature_monitor:sensor_list' %}" class="card-link {% if sensor_alert_environment %}text-light{% elif sensor_alert_time %}text-primary{% else %}text-light{% endif %}">
                 <div class="card-body">
-                  <h4 class="card-title text-center my-5">{{ sensor_count }} Sensor{{ sensor_count|pluralize }}</h4>
+                  <h4 class="card-title text-center my-5">{{ active_sensor_count }} Sensor{{ active_sensor_count|pluralize }}</h4>
                 </div>
               </a>
             </div>

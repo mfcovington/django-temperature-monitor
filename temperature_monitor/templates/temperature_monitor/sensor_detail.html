@@ -41,10 +41,10 @@
               <span class="d-none d-md-inline">La Crosse Alerts Mobile</span><span class="d-md-none">La Crosse</span>
             </a>
           </div>
-          {{ sensor.location }}
+          {{ sensor.location }} {% if not sensor.active %}<span class="text-danger"><small>INACTIVE</small></span>{% endif %}
         </h5>
       </div>
-      <div class="card-body">
+      <div class="card-body {% if not sensor.active %}bg-secondary{% endif %}">
         {% if sensor.probe_range != "-" %}
           <p class="mb-2"><strong>Probe Range:</strong> {{ sensor.probe_range }}</p>
         {% endif %}

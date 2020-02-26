@@ -29,13 +29,14 @@ def home(request):
     context = {
         'gateway_count': Gateway.objects.count(),
         'query_count': Query.objects.count(),
+        'active_sensor_count': Sensor.objects.filter(active=True).count(),
         'sensor_count': Sensor.objects.count(),
         'gateway_alert': True in [g.alert for g in Gateway.objects.all()],
         'query_alert': query_alert,
         'sensor_alert_environment': True in [
-            s.alert_environment for s in Sensor.objects.all()],
+            s.alert_environment for s in Sensor.objects.filter(active=True)],
         'sensor_alert_time': True in [
-            s.alert_time for s in Sensor.objects.all()],
+            s.alert_time for s in Sensor.objects.filter(active=True)],
         'latest_query': latest_query(),
         'update_delay': 60 * getattr(
             settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5),
@@ -71,7 +72,8 @@ class GatewayDetail(PermissionRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['sensor_list'] = Sensor.objects.filter(gateway=self.object)
+        context['sensor_list'] = Sensor.objects.filter(
+            gateway=self.object, active=True)
         context['latest_query'] = latest_query()
         context['update_delay'] = 60 * getattr(
             settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
@@ -139,3 +141,6 @@ class SensorList(PermissionRequiredMixin, ListView):
         context['update_delay'] = 60 * getattr(
             settings, 'LA_CROSSE_ALERTS_UPDATE_DELAY', 5)
         return context
+
+    def get_queryset(self):
+        return Sensor.objects.filter(active=True)

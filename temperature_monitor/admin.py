@@ -9,13 +9,18 @@ class GatewayAdmin(admin.ModelAdmin):
         'serial_number',
         'last_seen',
         'time_since_last_seen',
-        'sensors_count',
+        'active_sensors_count',
+        'inactive_sensors_count',
         '_timezone',
     ]
 
-    def sensors_count(self, obj):
-        return obj.sensors.count()
-    sensors_count.short_description = '# of Sensors'
+    def active_sensors_count(self, obj):
+        return obj.active_sensors_count
+    active_sensors_count.short_description = '# of active Sensors'
+
+    def inactive_sensors_count(self, obj):
+        return obj.inactive_sensors_count
+    inactive_sensors_count.short_description = '# of inactive Sensors'
 
 
 @admin.register(Query)
@@ -49,11 +54,13 @@ class SensorAdmin(admin.ModelAdmin):
         'device_type',
         'serial_number',
         'gateway',
+        'active',
     ]
     list_filter = [
         'gateway',
         'battery',
         'link',
+        'active',
     ]
 
     def timepoints_count(self, obj):
